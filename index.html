@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Edmon's Training Log</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Training Log">
+<meta name="theme-color" content="#ECEEF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1114" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-column phone app — sticky top bar, scrolling view, fixed bottom tab bar (plate-loaded gym, cobalt "20 kg plate" accent) */
+:root{
+  --bg:#ECEEF1; --surface:#FFFFFF; --sunk:#F4F5F7; --line:#D9DDE3;
+  --ink:#14171B; --muted:#5B636E; --accent:#2B55E0; --accent-ink:#FFFFFF; --accent-soft:#E3E9FC;
+  --warn:#B4670A; --warn-soft:#FBF0DF; --danger:#C2361F; --good:#1E7A4C;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1114; --surface:#171B20; --sunk:#1E2329; --line:#2A3038;
+  --ink:#E8EBEE; --muted:#9AA3AE; --accent:#7B96FF; --accent-ink:#0B0F1A; --accent-soft:#1E2742;
+  --warn:#E5A44B; --warn-soft:#2D2416; --danger:#F07862; --good:#5BC48F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1114; --surface:#171B20; --sunk:#1E2329; --line:#2A3038;
+  --ink:#E8EBEE; --muted:#9AA3AE; --accent:#7B96FF; --accent-ink:#0B0F1A; --accent-soft:#1E2742;
+  --warn:#E5A44B; --warn-soft:#2D2416; --danger:#F07862; --good:#5BC48F; color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px}
+header.top h1{font:700 26px/1 var(--display);letter-spacing:.02em;text-transform:uppercase;margin:0;flex:1;min-width:0;text-wrap:balance}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--good)} .dot.off{background:var(--warn)}
+main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+main .wrap{padding-block:16px;display:flex;flex-direction:column;gap:18px}
+h2{font:600 15px/1.2 var(--display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+h3{margin:0}
+.banner{background:var(--warn-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border-radius:var(--r);padding:12px}
+.stat b{display:block;font:700 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:500;font-size:15px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:600;background:var(--sunk);min-height:44px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn.small{padding:6px 12px;min-height:34px;font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.list{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r);overflow:hidden}
+.item{display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
+.item:first-child{border-top:0}
+.date{width:46px;flex:none;text-align:center;line-height:1}
+.date b{display:block;font:700 24px/1 var(--display);font-variant-numeric:tabular-nums}
+.date span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.item .t{font-weight:600}
+.item .s{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-radius:999px;padding:2px 8px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.pill.q{background:var(--warn-soft);color:var(--warn)}
+.month{font:600 13px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:6px 2px 0}
+input.search,input.f,select.f,textarea.f{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+textarea.f{min-height:64px;resize:vertical}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{background:none;border:0;padding:10px 0 12px;font:600 14px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab.on{color:var(--accent)}
+.badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--warn);color:#fff;border-radius:999px;font:600 11px/16px var(--body);padding:0 5px;min-width:16px}
+/* session detail + editor */
+.card{background:var(--surface);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.sess-h{display:flex;align-items:flex-start;gap:10px}
+.sess-h h3{font:700 30px/1.05 var(--display);text-transform:uppercase;flex:1;min-width:0;text-wrap:balance}
+.grp{font:600 13px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:6px}
+.ex{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px dashed var(--line)}
+.ex:first-of-type{border-top:0}
+.ex .n{flex:1;min-width:0;font-weight:500}
+.ex .v{font:600 18px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.ex .nt{font-size:13px;color:var(--muted)}
+.q{font-size:13px;background:var(--warn-soft);border-radius:8px;padding:6px 10px;margin-top:4px}
+.orig{white-space:pre-wrap;font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px;max-height:320px;overflow:auto}
+.ed-ex{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.grid3 label,.lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;flex-direction:column;gap:4px}
+.back{background:none;border:0;color:var(--accent);font-weight:600;padding:8px 0;min-height:44px}
+.empty{color:var(--muted);text-align:center;padding:28px 12px}
+table.h{width:100%;border-collapse:collapse;font-size:15px}
+table.h td{padding:9px 6px;border-top:1px solid var(--line);vertical-align:top}
+table.h td.d{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums;width:1%}
+table.h td.v{text-align:right;font:600 17px/1.2 var(--display);white-space:nowrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:20}
+@media (prefers-reduced-motion:no-preference){.item:active,.chip:active,.btn:active{transform:scale(.98)}}
+</style>
+</head><body>
+
+<header class="top"><div class="wrap">
+  <h1 id="title">Training Log</h1>
+  <div class="sync" id="sync"><span class="dot" id="dot"></span><span id="synctext">Loading…</span></div>
+</div></header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<nav class="tabs" aria-label="Sections"><div class="wrap">
+  <button class="tab" data-tab="home" id="tab-home"><svg viewBox="0 0 24 24"><path d="M3 10h2v4H3zM19 10h2v4h-2zM6 7h2v10H6zM16 7h2v10h-2zM8 12h8"/></svg>Log</button>
+  <button class="tab" data-tab="history" id="tab-history"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>History</button>
+  <button class="tab" data-tab="exercises" id="tab-exercises"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Progress</button>
+  <button class="tab" data-tab="review" id="tab-review"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6M12 17h.01"/></svg>Check<span class="badge" id="badge" hidden></span></button>
+</div></nav>
+
+<datalist id="exnames"></datalist>
+<datalist id="sessnames"></datalist>
+
+<script>
+(function(){
+const GROUPS=["Chest","Back","Shoulders","Biceps","Triceps","Legs","Glutes","Calves","Core","Cardio","Full Body","Swim","Other"];
+const CACHE_KEY="tl-workouts-v1";
+let W=[];            // [{id, ...doc}]
+let canWrite=true;
+let tab="home", route=null; // route: {kind:'session',id} | {kind:'edit',id|null,draft} | {kind:'exercise',name}
+let histQuery="", histYear="all", exQuery="";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const pd=d=>{const[y,m,dd]=d.split("-").map(Number);return new Date(y,m-1,dd)};
+const todayISO=()=>{const t=new Date();return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")};
+const longDate=d=>{const x=pd(d);return DOW[x.getDay()]+", "+MON[x.getMonth()]+" "+x.getDate()+", "+x.getFullYear()};
+function fmtV(e){
+  const p=[];
+  if(e.sets&&e.reps)p.push(e.sets+" × "+e.reps);else if(e.sets)p.push(e.sets+" sets");else if(e.reps)p.push(e.reps);
+  if(e.weight)p.push("@ "+e.weight);
+  return p.join(" ");
+}
+function sorted(){return W.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.source?.created||b.updatedAt||"").localeCompare(a.source?.created||a.updatedAt||""))}
+function uncertainList(){const out=[];for(const w of sorted())(w.exercises||[]).forEach((e,i)=>{if(e.uncertain)out.push({w,e,i})});return out}
+
+/* ---------- cache ---------- */
+function loadCache(){try{const s=localStorage.getItem(CACHE_KEY);if(s){W=JSON.parse(s);return true}}catch(e){}return false}
+let cacheTimer=null;
+function saveCache(){try{localStorage.setItem(CACHE_KEY,JSON.stringify(W));return true}catch(e){toast("Couldn't save on this phone. Export a backup now.");return false}}
+
+/* ---------- sync status ---------- */
+function setSync(state,text){$("#dot").className="dot "+(state||"");$("#synctext").textContent=text}
+let toastT=null;
+function toast(msg){let t=$("#toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200)}
+
+/* ---------- derived ---------- */
+function datalists(){
+  const ex=new Map(),ss=new Map();
+  for(const w of W){ss.set(w.session,(ss.get(w.session)||0)+1);for(const e of w.exercises||[])if(e.name)ex.set(e.name,e.group)}
+  $("#exnames").innerHTML=[...ex.keys()].sort().map(n=>`<option value="${esc(n)}">`).join("");
+  $("#sessnames").innerHTML=[...ss.entries()].sort((a,b)=>b[1]-a[1]).map(([n])=>`<option value="${esc(n)}">`).join("");
+  return {ex,ss};
+}
+function groupOf(name){for(const w of W)for(const e of w.exercises||[])if(e.name===name)return e.group;return "Other"}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
+  const n=uncertainList().length;const bd=$("#badge");bd.hidden=!n;bd.textContent=n>99?"99+":n;
+  const v=$("#view");
+  if(route?.kind==="session")v.innerHTML=viewSession(route.id);
+  else if(route?.kind==="edit")v.innerHTML=viewEdit();
+  else if(route?.kind==="exercise")v.innerHTML=viewExercise(route.name);
+  else v.innerHTML={home:viewHome,history:viewHistory,exercises:viewExercises,review:viewReview}[tab]();
+  if(route?.kind==="edit")bindEditor();
+}
+function banner(){
+  if(W.length)return "";
+  return `<div class="card"><b>Bring in your workout history</b><div style="color:var(--muted);font-size:14px">Pick the file <i>training-log-history.json</i> (from Files or iCloud Drive) to load every workout since July 2022. You only need to do this once.</div><label class="btn primary" style="text-align:center">Import history file<input type="file" id="importfile" accept=".json,application/json" hidden></label></div>`;
+}
+function sessItem(w){
+  const d=pd(w.date);const qn=(w.exercises||[]).filter(e=>e.uncertain).length;
+  const names=(w.exercises||[]).map(e=>e.name).filter(Boolean);
+  return `<button class="item" data-open="${esc(w.id)}"><div class="date"><b>${d.getDate()}</b><span>${MON[d.getMonth()]}</span></div>
+  <div class="grow"><div class="row" style="gap:6px"><span class="t">${esc(w.session||"Workout")}</span>${w.type==="swim"?'<span class="pill">Swim</span>':""}${qn?`<span class="pill q">${qn} to check</span>`:""}</div>
+  <div class="s">${(w.exercises||[]).length} exercises · ${esc(names.slice(0,4).join(", "))}${names.length>4?"…":""}</div></div></button>`;
+}
+function viewHome(){
+  const s=sorted();
+  if(!s.length)return banner()+`<div class="empty">Your workouts will show up here.<br>Tap a session below to log your first one.</div>`+startBlock();
+  const now=new Date();const wk=new Date(now);wk.setDate(now.getDate()-((now.getDay()+6)%7));wk.setHours(0,0,0,0);
+  const thisWeek=s.filter(w=>pd(w.date)>=wk).length;
+  const first=s[s.length-1].date;const fd=pd(first);
+  const yr=String(now.getFullYear());const ytd=s.filter(w=>w.date.startsWith(yr)).length;
+  return banner()+`<div class="stats">
+    <div class="stat"><b>${thisWeek}</b><span>This week</span></div>
+    <div class="stat"><b>${ytd}</b><span>In ${yr}</span></div>
+    <div class="stat"><b>${s.length}</b><span>Since ${MON[fd.getMonth()]} ${String(fd.getFullYear()).slice(2)}</span></div>
+  </div>`+startBlock()+`<h2>Recent</h2><div class="list">${s.slice(0,6).map(sessItem).join("")}</div>
+  <button class="btn ghost" data-tab-go="history">See all ${s.length} sessions</button>`;
+}
+function startBlock(){
+  const ss=new Map();for(const w of sorted().slice(0,60))ss.set(w.session,(ss.get(w.session)||0)+1);
+  const top=[...ss.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
+  if(!top.length)top.push("Push","Pull","Legs","Shoulders + Arms");
+  return `<h2>Start a workout</h2><div class="card"><div class="lbl">Pick a session to copy your last one, or start blank</div>
+  <div class="chips">${top.map(n=>`<button class="chip" data-start="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+  <button class="btn primary" data-start="">Start blank workout</button></div>`;
+}
+function viewHistory(){
+  const s=sorted();const years=[...new Set(s.map(w=>w.date.slice(0,4)))];
+  const q=histQuery.trim().toLowerCase();
+  const f=s.filter(w=>(histYear==="all"||w.date.startsWith(histYear))&&(!q||(w.session||"").toLowerCase().includes(q)||(w.exercises||[]).some(e=>(e.name||"").toLowerCase().includes(q))));
+  let html=banner()+`<input class="search" id="hq" type="search" placeholder="Search session or exercise" value="${esc(histQuery)}" autocomplete="off">
+  <div class="chips">${["all",...years].map(y=>`<button class="chip ${histYear===y?"on":""}" data-year="${y}">${y==="all"?"All":y}</button>`).join("")}</div>
+  <div class="row"><span class="grow s" style="color:var(--muted);font-size:14px">${f.length} session${f.length===1?"":"s"}</span><button class="btn small ghost" id="export">Export backup</button><label class="btn small ghost">Import<input type="file" id="importfile" accept=".json,application/json" hidden></label></div>`;
+  if(!f.length)return html+`<div class="empty">No sessions match.</div>`;
+  let cur="";let buf=[];const out=[];
+  const flush=()=>{if(buf.length)out.push(`<div class="month">${cur}</div><div class="list">${buf.join("")}</div>`);buf=[]};
+  for(const w of f){const d=pd(w.date);const m=MON[d.getMonth()]+" "+d.getFullYear();if(m!==cur){flush();cur=m}buf.push(sessItem(w))}
+  flush();
+  return html+`<div id="hlist" style="display:flex;flex-direction:column;gap:8px">${out.join("")}</div>`;
+}
+function exStats(){
+  const m=new Map();
+  for(const w of W)for(const e of w.exercises||[]){if(!e.name)continue;const r=m.get(e.name)||{name:e.name,group:e.group,count:0,last:""};r.count++;if(w.date>r.last)r.last=w.date;m.set(e.name,r)}
+  return [...m.values()];
+}
+function viewExercises(){
+  const q=exQuery.trim().toLowerCase();
+  const all=exStats().filter(r=>!q||r.name.toLowerCase().includes(q)).sort((a,b)=>b.last.localeCompare(a.last)||b.count-a.count);
+  const by=new Map();for(const r of all){if(!by.has(r.group))by.set(r.group,[]);by.get(r.group).push(r)}
+  let html=`<input class="search" id="eq" type="search" placeholder="Find an exercise" value="${esc(exQuery)}" autocomplete="off">`;
+  if(!all.length)return html+`<div class="empty">No exercises yet.</div>`;
+  for(const g of GROUPS.filter(g=>by.has(g)).concat([...by.keys()].filter(g=>!GROUPS.includes(g)))){
+    html+=`<div class="month">${esc(g)}</div><div class="list">${by.get(g).map(r=>`<button class="item" data-ex="${esc(r.name)}"><div class="grow"><div class="t">${esc(r.name)}</div><div class="s">${r.count}× · last ${longDate(r.last)}</div></div></button>`).join("")}</div>`;
+  }
+  return html;
+}
+function viewExercise(name){
+  const rows=[];for(const w of sorted())for(const e of w.exercises||[])if(e.name===name)rows.push({w,e});
+  return `<button class="back" data-back>‹ Progress</button><div class="card"><div class="sess-h"><h3>${esc(name)}</h3><span class="pill">${esc(rows[0]?.e.group||"")}</span></div>
+  <div class="s" style="color:var(--muted)">${rows.length} times · first ${rows.length?longDate(rows[rows.length-1].w.date):"—"}</div>
+  <div style="overflow-x:auto"><table class="h">${rows.map(({w,e})=>`<tr><td class="d">${MON[pd(w.date).getMonth()]} ${pd(w.date).getDate()}, ${w.date.slice(2,4)}</td><td>${esc(w.session)}${e.notes?`<div class="nt" style="font-size:13px;color:var(--muted)">${esc(e.notes)}</div>`:""}</td><td class="v">${esc(fmtV(e))||"—"}</td></tr>`).join("")}</table></div></div>`;
+}
+function viewSession(id){
+  const w=W.find(x=>x.id===id);if(!w)return `<button class="back" data-back>‹ Back</button><div class="empty">This workout was deleted.</div>`;
+  let body="";let g=null;
+  (w.exercises||[]).forEach((e,i)=>{
+    if(e.group!==g){g=e.group;body+=`<div class="grp">${esc(g)}</div>`}
+    body+=`<div class="ex"><div class="n">${esc(e.name)}${e.notes?`<div class="nt">${esc(e.notes)}</div>`:""}${e.uncertain?`<div class="q">Not sure: ${esc(e.question||"please check against your original note")}<br><span style="color:var(--muted)">You wrote: “${esc(e.original)}”</span></div>`:""}</div><div class="v">${esc(fmtV(e))||"—"}</div></div>`;
+  });
+  return `<button class="back" data-back>‹ Back</button><div class="card">
+  <div class="sess-h"><h3>${esc(w.session||"Workout")}</h3>${canWrite?`<button class="btn small primary" data-edit="${esc(w.id)}">Edit</button>`:""}</div>
+  <div style="color:var(--muted)">${longDate(w.date)}</div>${body||'<div class="empty">No exercises recorded.</div>'}
+  ${w.notes?`<div class="lbl" style="margin-top:6px">Notes</div><div>${esc(w.notes)}</div>`:""}</div>
+  ${canWrite?`<button class="btn ghost" data-repeat="${esc(w.id)}">Do this workout again today</button>`:""}
+  ${w.source?.noteTitle?`<details class="card"><summary>From your note “${esc(w.source.noteTitle)}”</summary><div class="orig">${esc((w.exercises||[]).map(e=>e.original).filter((v,i,a)=>v&&a.indexOf(v)===i).join("\n"))}</div></details>`:""}`;
+}
+function viewReview(){
+  const L=uncertainList();
+  if(!L.length)return `<div class="empty">Nothing left to check. Every imported exercise has been confirmed.</div>`;
+  return `<div class="card" style="gap:4px"><b>${L.length} imported exercises need a quick look</b><div style="color:var(--muted);font-size:14px">I made a best guess for each from your original note. Tap “Looks right” to keep it, or open the workout to fix it.</div></div>
+  <div class="list">${L.slice(0,150).map(({w,e,i})=>`<div class="item" style="flex-direction:column;align-items:stretch;gap:6px">
+   <div class="row"><span class="grow t">${esc(e.name)} <span style="font-weight:400;color:var(--muted)">${esc(fmtV(e))}</span></span><span class="s">${MON[pd(w.date).getMonth()]} ${pd(w.date).getDate()}, ${w.date.slice(0,4)}</span></div>
+   <div class="q">${esc(e.question||"Please check this against your original note.")}<br><span style="color:var(--muted)">You wrote: “${esc(e.original)}”</span></div>
+   <div class="row">${canWrite?`<button class="btn small primary" data-ok="${esc(w.id)}|${i}">Looks right</button><button class="btn small ghost" data-edit="${esc(w.id)}">Fix it</button>`:""}<button class="btn small ghost" data-open="${esc(w.id)}">Open</button></div></div>`).join("")}</div>`;
+}
+
+/* ---------- editor ---------- */
+function blankEx(){return {name:"",group:"Other",sets:null,reps:"",weight:"",notes:"",original:"",uncertain:false}}
+function startDraft(sessionName){
+  let ex=[];
+  if(sessionName){const last=sorted().find(w=>w.session===sessionName);if(last)ex=(last.exercises||[]).map(e=>({name:e.name,group:e.group,sets:e.sets,reps:e.reps||"",weight:e.weight||"",notes:"",original:"",uncertain:false}))}
+  if(!ex.length)ex=[blankEx()];
+  route={kind:"edit",id:null,draft:{date:todayISO(),session:sessionName||"",type:sessionName==="Swim"?"swim":"gym",notes:"",exercises:ex}};
+  window.scrollTo(0,0);render();
+}
+function editExisting(id){const w=W.find(x=>x.id===id);if(!w)return;route={kind:"edit",id,draft:JSON.parse(JSON.stringify({date:w.date,session:w.session,type:w.type||"gym",notes:w.notes||"",exercises:w.exercises||[]})),confirmDel:false};window.scrollTo(0,0);render()}
+function viewEdit(){
+  const d=route.draft;
+  return `<button class="back" data-cancel>‹ Cancel</button>
+  <div class="card"><div class="row"><label class="lbl grow">Date<input class="f" id="ed-date" type="date" value="${esc(d.date)}"></label>
+  <label class="lbl grow">Session<input class="f" id="ed-sess" list="sessnames" value="${esc(d.session)}" placeholder="e.g. Push"></label></div></div>
+  <h2>Exercises</h2>
+  ${d.exercises.map((e,i)=>`<div class="ed-ex" data-i="${i}">
+    <div class="row"><input class="f grow" id="ex-n-${i}" list="exnames" placeholder="Exercise" value="${esc(e.name)}" data-k="name">
+    <button class="btn small ghost" data-rm="${i}" aria-label="Remove exercise">Remove</button></div>
+    <div class="grid3"><label>Sets<input class="f" id="ex-s-${i}" inputmode="numeric" value="${e.sets??""}" data-k="sets"></label>
+    <label>Reps<input class="f" id="ex-r-${i}" value="${esc(e.reps??"")}" data-k="reps" placeholder="10-12"></label>
+    <label>Weight<input class="f" id="ex-w-${i}" value="${esc(e.weight??"")}" data-k="weight" placeholder="20 kg"></label></div>
+    <div class="row"><label class="lbl" style="width:42%">Muscle<select class="f" id="ex-g-${i}" data-k="group">${GROUPS.map(g=>`<option ${g===e.group?"selected":""}>${g}</option>`).join("")}</select></label>
+    <label class="lbl grow">Notes<input class="f" id="ex-o-${i}" value="${esc(e.notes??"")}" data-k="notes" placeholder="superset, drop set…"></label></div>
+    ${e.uncertain?`<label class="q row" style="gap:8px"><input type="checkbox" id="ex-u-${i}" data-k="uncertain"> Mark as checked — ${esc(e.question||"")} (“${esc(e.original)}”)</label>`:""}
+  </div>`).join("")}
+  <button class="btn ghost" id="addex">+ Add exercise</button>
+  <label class="lbl">Workout notes<textarea class="f" id="ed-notes" placeholder="Energy, cardio, how it felt">${esc(d.notes)}</textarea></label>
+  <button class="btn primary" id="save">Save workout</button>
+  ${route.id?`<button class="btn danger" id="del">${route.confirmDel?"Tap again to delete for good":"Delete workout"}</button>`:""}`;
+}
+function readEditor(){
+  const d=route.draft;
+  d.date=$("#ed-date").value||d.date;d.session=$("#ed-sess").value.trim();d.notes=$("#ed-notes").value.trim();
+  document.querySelectorAll(".ed-ex").forEach(el=>{const i=+el.dataset.i;const e=d.exercises[i];
+    el.querySelectorAll("[data-k]").forEach(inp=>{const k=inp.dataset.k;
+      if(k==="sets"){const n=parseInt(inp.value,10);e.sets=isNaN(n)?null:n}
+      else if(k==="uncertain"){if(inp.checked){e.uncertain=false;delete e.question}}
+      else e[k]=inp.value.trim()});
+  });
+}
+function bindEditor(){
+  document.querySelectorAll('.ed-ex input[data-k="name"]').forEach(inp=>inp.addEventListener("change",()=>{
+    const i=+inp.closest(".ed-ex").dataset.i;const g=groupOf(inp.value.trim());const sel=$("#ex-g-"+i);if(sel&&g)sel.value=g;}));
+}
+async function saveDraft(){
+  readEditor();const d=route.draft;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d.date)){toast("Pick a date first");return}
+  const exercises=d.exercises.filter(e=>e.name).map(e=>{const o={name:e.name,group:e.group||"Other",sets:e.sets??null,reps:e.reps||null,weight:e.weight||null,notes:e.notes||"",original:e.original||"",uncertain:!!e.uncertain};if(e.question&&e.uncertain)o.question=e.question;if(e.setDetails)o.setDetails=e.setDetails;return o});
+  if(!exercises.length){toast("Add at least one exercise");return}
+  const id=route.id||("w"+Date.now().toString(36));
+  const prev=W.find(x=>x.id===id);
+  const doc={date:d.date,session:d.session||"Workout",type:/swim/i.test(d.session)?"swim":(d.type||"gym"),exercises,notes:d.notes,source:prev?.source||null,flags:prev?.flags||[],updatedAt:new Date().toISOString()};
+  const btn=$("#save");btn.disabled=true;btn.textContent="Saving…";
+  try{upsertLocal(id,doc);route={kind:"session",id};toast(prev?"Workout updated":"Workout saved");render()}
+  catch(e){btn.disabled=false;btn.textContent="Save workout";toast(e?.code==="quota_exceeded"?"Storage is full":"Couldn't save. Check your connection and try again")}
+}
+async function deleteCurrent(){
+  if(!route.confirmDel){readEditor();route.confirmDel=true;render();return}
+  const id=route.id;
+  try{W=W.filter(x=>x.id!==id);saveCache();route=null;tab="history";toast("Workout deleted");render()}
+  catch(e){toast("Couldn't delete. Try again")}
+}
+function upsertLocal(id,doc){const i=W.findIndex(x=>x.id===id);const r={id,...doc};if(i<0)W.push(r);else W[i]=r;saveCache();datalists()}
+async function markOk(id,i){
+  const w=W.find(x=>x.id===id);if(!w)return;const ex=JSON.parse(JSON.stringify(w.exercises));ex[i].uncertain=false;delete ex[i].question;
+  const doc={...w,exercises:ex,updatedAt:new Date().toISOString()};delete doc.id;
+  upsertLocal(id,doc);render()
+}
+async function exportBackup(){
+  const name="training-log-"+todayISO()+".json";
+  const blob=new Blob([JSON.stringify({app:"edmon-training-log",version:1,exported:new Date().toISOString(),workouts:sorted()})],{type:"application/json"});
+  try{
+    const file=new File([blob],name,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});return}
+  }catch(e){if(e&&e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+}
+async function importFile(file){
+  try{
+    const data=JSON.parse(await file.text());
+    const list=Array.isArray(data)?data:(data.workouts||data.items);
+    if(!Array.isArray(list))throw new Error("format");
+    const m=new Map(W.map(w=>[w.id,w]));let added=0,updated=0;
+    for(const w of list){if(!w||!w.id||!w.date||!Array.isArray(w.exercises))continue;
+      const cur=m.get(w.id);
+      if(!cur){m.set(w.id,w);added++}
+      else if((w.updatedAt||"")>(cur.updatedAt||"")){m.set(w.id,w);updated++}}
+    W=[...m.values()];if(!saveCache())return;datalists();route=null;render();
+    toast(added||updated?`Imported ${added} new${updated?`, updated ${updated}`:""}`:"Nothing new in that file");
+  }catch(e){toast("That file isn't a training log backup")}
+}
+document.addEventListener("change",ev=>{if(ev.target.id==="importfile"&&ev.target.files[0]){importFile(ev.target.files[0]);ev.target.value=""}});
+
+/* ---------- events ---------- */
+document.addEventListener("click",ev=>{
+  const t=ev.target.closest("button,[data-open]");if(!t)return;
+  if(t.dataset.tab){tab=t.dataset.tab;route=null;window.scrollTo(0,0);render();return}
+  if(t.dataset.tabGo){tab=t.dataset.tabGo;route=null;window.scrollTo(0,0);render();return}
+  if(t.dataset.open){route={kind:"session",id:t.dataset.open,from:tab};window.scrollTo(0,0);render();return}
+  if(t.dataset.ex){route={kind:"exercise",name:t.dataset.ex};window.scrollTo(0,0);render();return}
+  if("back" in t.dataset||"cancel" in t.dataset){route=null;render();return}
+  if(t.dataset.year){histYear=t.dataset.year;render();return}
+  if("start" in t.dataset){if(!canWrite){toast("Sign in to claude.ai to log workouts");return}startDraft(t.dataset.start);return}
+  if(t.dataset.edit){editExisting(t.dataset.edit);return}
+  if(t.dataset.repeat){const w=W.find(x=>x.id===t.dataset.repeat);if(w)startDraft(w.session);return}
+  if(t.dataset.ok){const[id,i]=t.dataset.ok.split("|");markOk(id,+i);return}
+  if(t.dataset.rm!==undefined){readEditor();route.draft.exercises.splice(+t.dataset.rm,1);render();return}
+  if(t.id==="addex"){readEditor();route.draft.exercises.push(blankEx());render();const n=document.getElementById("ex-n-"+(route.draft.exercises.length-1));n&&n.focus();return}
+  if(t.id==="save"){saveDraft();return}
+  if(t.id==="del"){deleteCurrent();return}
+  if(t.id==="export"){exportBackup();return}
+});
+let inT=null;
+document.addEventListener("input",ev=>{
+  if(ev.target.id==="hq"){histQuery=ev.target.value;clearTimeout(inT);inT=setTimeout(()=>{const pos=ev.target.selectionStart;render();const h=$("#hq");if(h){h.focus();try{h.setSelectionRange(pos,pos)}catch(e){}}},180)}
+  if(ev.target.id==="eq"){exQuery=ev.target.value;clearTimeout(inT);inT=setTimeout(()=>{const pos=ev.target.selectionStart;render();const h=$("#eq");if(h){h.focus();try{h.setSelectionRange(pos,pos)}catch(e){}}},180)}
+});
+
+/* ---------- boot ---------- */
+loadCache();datalists();
+function status(){setSync(W.length?"ok":"off",W.length?"On this iPhone":"No data yet")}
+status();render();
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+const _render=render;render=function(){_render();status()};
+})();
+</script>
+</body></html>
